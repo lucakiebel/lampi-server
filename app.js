@@ -116,7 +116,8 @@ io.on('connection', (socket) => {
      */
 
     socket.on("car-over-led", data => {
-        console.log("Car drove over LED " + data.c);
+        console.log(data);
+        console.log("Car drove over LED with uid " + data.sn);
 		if (data.sn === currentLED.sn) {
 			// Car drove over correct LED
 			chooseLED(socket);
