@@ -39,6 +39,8 @@ app.get('/highScoreList', (req, res) => {
 });
 
 io.on('connection', (socket) => {
+
+    let device;
 	console.log('A new Client connected at ' + socket.handshake.time);
 
 	socket.on("Echo", data => {
@@ -48,12 +50,14 @@ io.on('connection', (socket) => {
 
 	socket.on("device-car", (data) => {
 		// code when a car connects to the server
+        device = "car";
 		console.log("The Client is a Car");
 		socket.join("Car");
 	});
 
 	socket.on("device-user", (data) => {
 		// code when a user starts a game
+        device = "user";
 		console.log("The Client is a User");
 		console.log("With the Username " + data.name + " and the uid " + data.uid);
 		socket.join("User/" + data.name);
@@ -64,6 +68,7 @@ io.on('connection', (socket) => {
 
 	socket.on("device-base", data => {
 		// code when the base/board is connected
+        device = "base";
 		console.log("The Client is the Base");
 		socket.join("Base");
 	});
@@ -125,7 +130,7 @@ io.on('connection', (socket) => {
 
 
 	socket.on('disconnect', () => {
-		console.log("user/car disconnected");
+		console.log(device+" has disconnected from the Server.....");
 	});
 
 
