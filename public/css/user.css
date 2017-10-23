@@ -1,0 +1,78 @@
+body {
+    background:#1d1f20;
+    font-family: 'Roboto', sans-serif;
+}
+#controller {
+    width:40vh;
+    height:40vh;
+    -ms-transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+
+    margin-top: 55vh;
+    margin-left: 2vw;
+}
+
+path {
+    stroke: blue;
+}
+
+path:hover {
+    fill: #d3d3d3;
+}
+
+#stopwatch {
+    border-bottom: solid 5px blue;
+    border-right: solid 5px blue;
+    border-left: solid 5px blue;
+
+    position: absolute;
+
+    top: 0;
+    height: 30vh;
+    left: 10%;
+    right: 10%;
+
+    font-size: 24vh ;
+    color: white;
+    align-content: center;
+    text-align: center;
+    padding-top: 0;
+}
+
+#stopwatch-counter {
+    /**font-family: 'Digital-7 Mono', sans-serif;**/
+    font-family: 'Roboto Mono', sans-serif;
+    position: absolute;
+    top: -20px;
+    left: 10%;
+    right: 10%
+}
+
+#led-dot {
+    border-radius: 50%;
+    height: 10vh;
+    width: 10vh;
+
+    position: absolute;
+    left: 45%;
+    top: 35%;
+    background: center red;
+}
+
+#led-counter {
+    margin-left: 5%;
+    position: absolute;
+    left: 50%;
+    top: 33.5%;
+    color: white;
+    font-size: 10vh;
+}
+
+#logo {
+    color: white;
+    font-size: 8vh;
+    position: absolute;
+    right: 2vw;
+    bottom: 1vh;
+}
