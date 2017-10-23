@@ -46,6 +46,7 @@ io.on('connection', (socket) => {
 	socket.on("Echo", data => {
 	    console.log("Echo received");
 	    console.info(data);
+	    socket.emit("Echo", data);
     });
 
 	socket.on("device-car", (data) => {
