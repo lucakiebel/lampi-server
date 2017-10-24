@@ -1,0 +1,52 @@
+<html>
+<head>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <script src="/scripts/bootstrap.js"></script>
+    <script src="/scripts/jquery.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Rank</th>
+        <th>Username</th>
+        <th>Time</th>
+    </tr>
+    </thead>
+    <tbody id="tableBody">
+
+    </tbody>
+</table>
+<script>
+    $(function () {
+        const socket = io();
+        let scores = [];
+        socket.emit("device-highscores");
+        socket.on("update-scores", function(data) {
+            scores = sortScores(data.scores);
+            displayScores();
+        });
+        function displayScores() {
+            let a = "";
+            for (let i=0; i<scores.length; i++) {
+                let score = scores[i];
+                let b = "<tr>";
+                b += "<td>"+(i+1)+"</td>";
+                b += "<td>"+score.name+"</td>";
+                b += "<td>"+score.time+"</td>";
+                b += "</tr>";
+                a += b;
+            }
+            $("#tableBody").html(a);
+        }
+        function sortScores(scores) {
+            scores.sort(function (a, b) {
+                return a.time - b.time;
+            });
+            return scores;
+        }
+    });
+</script>
+</body>
+</html>

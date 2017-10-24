@@ -51,29 +51,36 @@ io.on('connection', (socket) => {
 
 	socket.on("device-car", (data) => {
 		// code when a car connects to the server
-        device = "car";
+        device = "Car";
 		console.log("The Client is a Car");
 		socket.join("Car");
 	});
 
 	socket.on("device-user", (data) => {
 		// code when a user starts a game
-        device = "user";
+        device = "User";
 		console.log("The Client is a User");
 		console.log("With the Username " + data.name + " and the uid " + data.uid);
 		socket.join("User/" + data.name);
 		console.info("------- GAME STARTED -------");
-		chooseLED(socket);
+		chooseLED();
 		console.info("STARTING WITH LED " + currentLED.c);
 	});
 
 	socket.on("device-base", data => {
 		// code when the base/board is connected
-        device = "base";
+        device = "Base";
 		console.log("The Client is the Base");
 		socket.join("Base");
 	});
 
+
+	socket.on("device-highscores", data => {
+	    device = "Highscorelist";
+	    console.log("The Client is a Highscorelist");
+	    socket.join("Highscores");
+	    updateHighscores();
+    });
 
     /**
 	 * Moving Cars
@@ -120,7 +127,7 @@ io.on('connection', (socket) => {
         console.log("Car drove over LED with uid " + data.sn);
 		if (data.sn === currentLED.sn) {
 			// Car drove over correct LED
-			chooseLED(socket);
+			chooseLED();
 			console.info("THUS CHANGING LED TO " + currentLED.c)
 		}
 	});
@@ -130,6 +137,24 @@ io.on('connection', (socket) => {
 	 * Updating Highscore List
      */
 
+    function updateHighscores() {
+        socket.to("Highscores").emit("update-scores", {scores: scoreBoard});
+    }
+
+    /**
+     * Choosing a LED
+     */
+
+    function chooseLED() {
+        currentLED = LEDs.nextLED(reachedLEDs);
+        socket.to("Base").emit("set-led", {led:currentLED});
+        reachedLEDs.push(currentLED);
+    }
+
+
+    /**
+     * Handling the on_disconnect Event
+     */
 
 	socket.on('disconnect', () => {
 		console.log(device+" has disconnected from the Server.....");
@@ -139,11 +164,7 @@ io.on('connection', (socket) => {
 
 });
 
-function chooseLED(socketIO) {
-    currentLED = LEDs.nextLED(reachedLEDs);
-    socketIO.to("Base").emit("set-led", {led:currentLED});
-    reachedLEDs.push(currentLED);
-}
+
 
 Array.prototype.nextLED = function (b) {
 	let a = this[Math.floor(Math.random() * this.length)];
@@ -152,6 +173,6 @@ Array.prototype.nextLED = function (b) {
 	return a;
 };
 
-http.listen(3000, () => {
-	console.log('listening on http://localhost:3000');
+http.listen(80, () => {
+	console.log('listening on http://localhost:80');
 });
