@@ -6,7 +6,9 @@ const io = require('socket.io')(http);
 app.use(express.static('public'));
 
 
-let scoreBoard = [];
+let scoreBoard = [
+    {name: "LamPi-Team", time: ""}
+];
 
 const LEDs = [
     {c:1,  sn:"6E:D1:5B:63"},
