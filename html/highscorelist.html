@@ -1,0 +1,70 @@
+<html>
+<head>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="fonts/fonts.css">
+    <script src="scripts/jquery.js"></script>
+    <script src="scripts/bootstrap.js"></script>
+</head>
+<body>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Rank</th>
+        <th>Username</th>
+        <th>Time</th>
+    </tr>
+    </thead>
+    <tbody id="tableBody">
+
+    </tbody>
+</table>
+<script>
+    $(function () {
+        const socket = new WebSocket("ws://localhost:80");
+        let scores = [];
+        socket.onopen = e => {
+            socket.send(JSON.stringify({message: "device", device: "scoreboard"}));
+        };
+        socket.onmessage = m => {
+            if (m.message === "update-scores") {
+                console.log(message);
+                scores = sortScores(m.data.scores);
+                displayScores();
+            }
+        };
+        function displayScores() {
+            let a = "";
+            for (let i=0; i<scores.length; i++) {
+                let score = scores[i];
+                let b = "<tr>";
+                b += "<td>"+(i+1)+"</td>";
+                b += "<td>"+score.name+"</td>";
+                b += "<td>"+formatTime(score.time)+"</td>";
+                b += "</tr>";
+                a += b;
+            }
+            $("#tableBody").html(a);
+        }
+        function sortScores(scores) {
+            scores.sort(function (a, b) {
+                return a.time - b.time;
+            });
+            return scores;
+        }
+
+        function formatTime(t) {
+            let mic=t%100, te=Math.floor(t/100), sec=Math.floor(te%60), min=Math.floor(te/60);
+            return l0(min,2)+":"+l0(sec,2)+"."+l0(mic,2)
+        }
+
+        function l0(num,len) {
+            num = ""+num;
+            while (num.length < len) {
+                num = "0"+num;
+            }
+            return num;
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, scalable=no">
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/user.css">
+    <link href="fonts/fonts.css" rel="stylesheet">
+</head>
+<body>
+<div id="stopwatch">
+    <span id="stopwatch-counter">00:00.00</span>
+</div>
+<div id="controller">
+</div>
+<div id="leds">
+    <span id="led-dot"></span><span id="led-counter">0</span>
+</div>
+<div id="logo">LamPi 💡</div>
+<script src=""></script>
+<script src="scripts/jquery-3.2.1.min.js"></script>
+<script src="scripts/bootstrap.js"></script>
+<script src="scripts/piechart.js"></script>
+<script>
+    let first = true;
+    let name;
+    if (window.localStorage.getItem("name"))
+        name = window.localStorage.getItem("name");
+    else {
+        name = prompt("Please enter a Username", "");
+        window.localStorage.setItem("name", name);
+    }
+
+
+    $(function () {
+        const socket = new WebSocket("ws://localhost:80");
+        let uid;
+        if (window.localStorage.getItem("uid"))
+            uid = window.localStorage.getItem("uid");
+        else {
+            let array = new Uint32Array(1);
+            window.crypto.getRandomValues(array);
+            uid = array[0];
+            window.localStorage.setItem("uid", uid);
+        }
+
+        $("#logo").click(function () {
+           window.alert("Your Username is \"" + name + "\" and your UID is \"" + uid + "\"");
+        });
+
+        let sendData = {data: {uid: uid, name:name}, device: "user"};
+        socket.onopen = e => {
+            sendData.message = "device";
+            socket.send(JSON.stringify(sendData));
+            new PieChart({
+                container: document.getElementById("controller"),
+                data: [{
+                    value: 20,
+                    col: "#fff",
+                    legend: "right"
+                }, {
+                    value: 20,
+                    col: "#fff",
+                    legend: "top"
+                }, {
+                    value: 20,
+                    col: "#fff",
+                    legend: "left"
+                }, {
+                    value: 20,
+                    col: "#fff",
+                    legend: "bottom"
+                }],
+                onMouseEnterSlice: function(sliceData) {
+                    mouseEntered(sliceData);
+                },
+                onMouseLeaveSlice: function(sliceData) {
+                    sliceData = undefined;
+                    sendData.message = "control";
+                    sendData.data.action = "stop";
+                    socket.send(JSON.stringify(sendData));
+                }
+            });
+        };
+        socket.onmessage = event => {
+            let message = event.data;
+            console.log(message);
+            if (message.message === "led-counter" && message.device === "server") {
+                if (message.data.action === "++") {
+                    const lc = $("#led-counter");
+                    lc.html(parseInt(lc.html())+1);
+                    if (lc.html() === 15) {
+                        sendData.message = "stop";
+                        socket.send(JSON.stringify(sendData));
+                    }
+                }
+            }
+        };
+        function mouseEntered(d){
+            console.log(first);
+            if (first) {
+                first = false;
+                startTimer();
+                sendData.message = "start";
+                socket.send(JSON.stringify(sendData));
+            }
+            sendData.message = "control";
+            sendData.data.action = move(d);
+            socket.send(JSON.stringify(sendData));
+        }
+        function move(d){
+            switch (d.legend) {
+                case "top":
+                    return "fwd";
+                    break;
+                case "right":
+                    return "right";
+                    break;
+                case "left":
+                    return "left";
+                    break;
+                case "bottom":
+                    return "bwd";
+                    break;
+                default: break;
+            }
+        }
+        function startTimer() {
+            console.log("Timer Started");
+            const counterElem = $("#stopwatch-counter");
+            let counter = 0;
+
+            setInterval(() => {
+               counterElem.html(formatTime(counter));
+                counter++;
+            }, 10);
+        }
+        function formatTime(t) {
+            let mic=t%100, te=Math.floor(t/100), sec=Math.floor(te%60), min=Math.floor(te/60);
+            return l0(min,2)+":"+l0(sec,2)+"."+l0(mic,2)
+        }
+        function l0(num,len) {
+           num = ""+num;
+           while (num.length <   len) {
+               num = "0"+num;
+           }
+           return num;
+        }
+    });
+
+</script>
+</body>
+</html>

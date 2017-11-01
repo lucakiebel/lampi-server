@@ -1,0 +1,152 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>LamPi Admin Dashboard</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap4.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="css/dashboard.css" rel="stylesheet">
+</head>
+
+<body>
+<header>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <a class="navbar-brand" href="#">LamPi 💡</a>
+        <button class="navbar-toggler d-lg-none" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</header>
+
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-sm-3 col-md-2 d-none d-sm-block bg-light sidebar">
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Overview <span class="sr-only">(current)</span></a>
+            </ul>
+        </nav>
+
+        <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">
+            <h1>Admin</h1>
+
+            <section class="row text-center placeholders">
+                <div class="col-6 col-sm-3 placeholder">
+                    <button id="scoreboard-btn" type="button" class="btn btn-primary btn-lg ">Scoreboard</button>
+                </div>
+                <div class="col-6 col-sm-3 placeholder">
+                    <button id="clients-btn" type="button" class="btn btn-primary btn-lg">Clients</button>
+                </div>
+                <div class="col-6 col-sm-3 placeholder">
+                    <button id="rem-btn" type="button" class="btn btn-danger btn-lg">Remove Users</button>
+                </div>
+                <div class="col-6 col-sm-3 placeholder">
+                    <button id="save-btn" type="button" class="btn btn-success btn-lg">Save Scores</button>
+                </div>
+            </section>
+
+            <h2 id="table-name"></h2>
+            <div class="table-responsive">
+                <table class="table table-striped" id="table">
+                    <thead id="thead"></thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</div>
+
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="scripts/jquery-3.2.1.min.js"></script>
+<script src="scripts/popper.js"></script>
+<script src="scripts/bootstrap4.js"></script>
+
+<script>
+    const socket = new WebSocket("ws://localhost:80");
+
+
+
+    let sendData = {device:"admin"};
+
+    const scoreBtn   = $("#scoreboard-btn");
+    const clientsBtn = $("#clients-btn");
+    const remBtn     = $("#rem-btn");
+    const saveBtn    = $("#save-btn");
+    const tableName  = $("#table-name");
+    const table      = $("#table");
+    const thead      = $("#thead");
+    const tbody      = $("#tbody");
+
+    scoreBtn.click(function (e) {
+        // get current highscores
+        tableName.html("Scores");
+        thead.html("<tr><td>Name</td><td>Time</td><td>UID</td></tr>");
+        $.getJSON("/api/scores", data => {
+            let a = "";
+            data.forEach(e => {
+                let b = "<tr>";
+                b += "<td>" + e.name + "</td>";
+                b += "<td>" + e.time + "</td>";
+                b += "<td>" + e.uid + "</td>";
+                b += "</tr>";
+                a += b;
+            });
+            tbody.html(a);
+        });
+    });
+
+    clientsBtn.click(function (e) {
+        // get current highscores
+        tableName.html("Clients");
+        thead.html("<tr><td>Type</td><td>IP</td><td>Socket ID</td></tr>");
+        $.getJSON("/api/clients", data => {
+            let a = "";
+            data.forEach(e => {
+                let b = "<tr>";
+                b += "<td>" + e.type + "</td>";
+                b += "<td>" + e.ip + "</td>";
+                b += "<td>" + e.id + "</td>";
+                b += "</tr>";
+                a += b;
+            });
+            tbody.html(a);
+        });
+    });
+
+    socket.onopen = e => {
+        remBtn.click(function (e) {
+            sendData.message = "rem-clients";
+            socket.send(JSON.stringify(sendData));
+        });
+        saveBtn.click(function (e) {
+            sendData.message = "save-scores";
+            socket.send(JSON.stringify(sendData));
+        })
+    };
+
+
+
+</script>
+
+</body>
+</html>
