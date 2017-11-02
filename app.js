@@ -39,7 +39,7 @@ const LEDs = [
 
 let reachedLEDs = [];
 
-let currentLED = LEDs.nextLED(reachedLEDs);
+let currentLED = {c:10, sn:"AE:1F:61:63"};
 
 app.all('/', (req, res) => {
 	res.sendFile(__dirname + '/html/index.html');
@@ -96,16 +96,19 @@ wss.on('connection', function connection(socket, req) {
                 onDevice();
                 break;
             case "control":
-                onCtrlCar(message.action);
+                onCtrlCar(message.data.action);
                 break;
             case "over-led":
-                onOverLED(message.data.sn);
+                if(message.device === "car-mifare")
+                    onOverLED(message.sn);
                 break;
             case "start":
-                startGame(message);
+                if(message.device === "user")
+                    startGame(message);
                 break;
             case "stop":
-                stopGame(message);
+                if(message.device === "user")
+                    stopGame(message);
                 break;
             case "save-scores":
                 saveScores(message);
@@ -151,13 +154,13 @@ wss.on('connection', function connection(socket, req) {
     }
 
     function onCtrlCar(action) {
+	    if(!action) action = "stop";
 	    let data = {
 	        message: "control",
             device: "server",
-            data: {
-                action: action
-            }
+            action: action
         };
+	    console.log(data);
         toDevice("car", data);
     }
 
@@ -175,7 +178,6 @@ wss.on('connection', function connection(socket, req) {
     /**
      * Updating Highscore List
      */
-
     function updateHighscores() {
         let data = {
             message: "update-scores",
@@ -190,9 +192,6 @@ wss.on('connection', function connection(socket, req) {
     /**
      * Choosing a LED
      */
-
-
-
     function chooseLED() {
         let temp = currentLED;
         currentLED = LEDs.nextLED(reachedLEDs);
@@ -226,16 +225,15 @@ wss.on('connection', function connection(socket, req) {
     /**
      * Handling the on_disconnect Event
      */
-
     socket.on('disconnect', () => {
         console.log(device+" has disconnected from the Server.....");
     });
 
 
     function toDevice(device, data) {
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN && client.device === device) {
-                client.send(JSON.stringify(data));
+        wss.clients.forEach(socket => {
+            if (socket.readyState === WebSocket.OPEN && socket.device === device) {
+                socket.send(JSON.stringify(data));
             }
         });
     }

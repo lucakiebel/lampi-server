@@ -1,1 +1,1 @@
-# lampi-server
+# Server Dateien
